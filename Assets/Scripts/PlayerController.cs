@@ -9,28 +9,45 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D _rigidbody2D;
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
+    [SerializeField] private UiRestartButton _uiRestartButton;
+
+    public enum State
+    {
+        None,
+        Dead,
+    }
+
+    public State state;
 
     public LayerMask ground;
+   // public LayerMask wall;
+
     public GameObject bloodStream;
 
     public bool usePhysicsForMovement;
+    [SerializeField] private bool canWallJump;
     public float moveForce;
     public float jumpForce;
+    private float hDirection;
 
     SliderPlatform stayingOnPlatform;
     
-    // Start is called before the first frame update
+
+    
     void Start()
     {
+        state = State.None;
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponentInChildren<Animator>();
         _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        canWallJump = false;
+        usePhysicsForMovement = true;
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
-        float hDirection = Input.GetAxis("Horizontal");
+        hDirection = Input.GetAxis("Horizontal");
 
         float platformVelocity = 0.0f;
         if (stayingOnPlatform != null)
@@ -63,12 +80,25 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) && _collider2D.IsTouchingLayers(ground))
         {
-            if (usePhysicsForMovement)
-                _rigidbody2D.AddForce(new Vector2(0.0f, jumpForce), ForceMode2D.Impulse);
-            else
-                _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, 7);
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, 7);
         }
+
+        if (_collider2D.IsTouchingLayers(ground))
+        {
+            canWallJump = false;
+        }
+
+        if (canWallJump)
+        {
+            ExtraJump();
+        }
+        
+        
+
     }
+
+    
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -88,12 +118,60 @@ public class PlayerController : MonoBehaviour
 
             Destroy(other.gameObject);
         }
+
+        if (other.CompareTag("PointDead"))
+        {
+            state = State.Dead;
+            Destroy(this.gameObject);
+            print("Character is dead");
+        }
     }
+
+   
 
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.transform.TryGetComponent<SliderPlatform>(out var platform))
             stayingOnPlatform = platform;
+
+        if (collision.gameObject.tag.Equals("Wall"))
+        {
+            if (!_collider2D.IsTouchingLayers(ground))  
+            {
+                canWallJump = true;
+            }
+
+            else if (_collider2D.IsTouchingLayers(ground))
+            {
+                canWallJump = false;
+            }
+        }
+            
+        
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag.Equals("Wall"))
+        {
+            if (!_collider2D.IsTouchingLayers(ground)) 
+            {
+                canWallJump = true;
+            }
+
+            else if (_collider2D.IsTouchingLayers(ground))
+            {
+                canWallJump = false;
+            }
+        }
+    }
+
+    private void ExtraJump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _rigidbody2D.AddForce(new Vector2(transform.right.x * jumpForce, transform.up.y * jumpForce), ForceMode2D.Impulse);
+        }
     }
 
     void OnCollisionExit2D(Collision2D collision)

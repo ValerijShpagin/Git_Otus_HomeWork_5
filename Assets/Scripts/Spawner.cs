@@ -6,7 +6,7 @@ public class Spawner : MonoBehaviour
 {
     public GameObject Prefab;
     public float Delay = 1.0f;
-    float TimeLeft;
+   [SerializeField] float TimeLeft;
 
     void Start()
     {

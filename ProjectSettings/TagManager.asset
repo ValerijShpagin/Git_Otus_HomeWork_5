@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Bonus
+  - Wall
+  - PointDead
   layers:
   - Default
   - TransparentFX
@@ -15,7 +17,7 @@ TagManager:
   - Ground
   - Crate
   - Player
-  - 
+  - Wall
   - 
   - 
   - 
@@ -50,4 +52,7 @@ TagManager:
     locked: 0
   - name: Foreground
     uniqueID: 2422083125
+    locked: 0
+  - name: UIDead
+    uniqueID: 72051429
     locked: 0
